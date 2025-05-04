@@ -79,6 +79,7 @@ extension MyPageView {
                         case .success(let image):
                             image
                                 .resizable()
+                                .scaledToFill()
                                 .clipShape(Circle())
                         case .failure:
                             Image(.personCircleFill)
