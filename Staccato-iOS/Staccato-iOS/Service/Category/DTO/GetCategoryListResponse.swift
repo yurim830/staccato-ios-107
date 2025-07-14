@@ -8,21 +8,19 @@
 import Foundation
 
 struct GetCategoryListResponse: Decodable {
-    
-    let categories: [CategoryResponse]
-    
-}
 
-struct CategoryResponse: Decodable {
-    
-    let categoryId: Int64
-    
-    let categoryThumbnailUrl: String?
-    
-    let categoryTitle: String
-    
-    let startAt: String?
-    
-    let endAt: String?
-    
+    let categories: [CategoryResponse]
+
+    struct CategoryResponse: Decodable {
+        let categoryId: Int64
+        let categoryThumbnailUrl: String?
+        let categoryTitle: String
+        let categoryColor: String
+        let startAt: String?
+        let endAt: String?
+        let isShared: Bool
+        let totalMemberCount: Int
+        let members: [MemberResponse]
+        let staccatoCount: Int
+    }
 }

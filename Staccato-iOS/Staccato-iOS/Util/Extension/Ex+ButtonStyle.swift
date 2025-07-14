@@ -10,7 +10,7 @@ import SwiftUI
 extension ButtonStyle where Self == StaccatoCapsuleButtonStyle {
     static func staccatoCapsule(
         icon: StaccatoIcon,
-        font: StaccatoFont = .body5,
+        font: StaccatoFont = .body4,
         iconSpacing: CGFloat = 1,
         horizontalPadding: CGFloat? = 8,
         verticalPadding: CGFloat = 4,
@@ -36,7 +36,7 @@ extension ButtonStyle where Self == StaccatoFilledButtonStyle {
     static func staccatoFilled(
         verticalPadding: CGFloat = 14,
         foregroundColor: Color = .staccatoWhite,
-        backgroundColor: Color = .accent
+        backgroundColor: Color = .staccatoBlue
     ) -> StaccatoFilledButtonStyle {
         .init(
             verticalPadding: verticalPadding,
