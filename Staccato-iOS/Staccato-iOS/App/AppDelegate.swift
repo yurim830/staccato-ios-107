@@ -9,10 +9,11 @@ import GoogleMaps
 import GooglePlacesSwift
 import FirebaseCore
 import FirebaseMessaging
+import FirebaseInstallations
 import UIKit
 
-// Maps SDK 초기화를 위해 AppDelegate 구현
-final class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate {
+// Maps SDK 초기화 및 FCM을 위해 AppDelegate 구현
+final class AppDelegate: NSObject, UIApplicationDelegate {
     
     func application(
         _ application: UIApplication,
@@ -30,6 +31,14 @@ final class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate {
         // 알림 센터 델리게이트 설정
         UNUserNotificationCenter.current().delegate = self
         
+        NotificationCenter.default.addObserver(
+            forName: .pushNotificationReceived,
+            object: nil,
+            queue: .main
+        ) { notification in
+            PushNotificationManager.shared.handlePushNotification(notification)
+        }
+        
         return true
     }
     
@@ -39,25 +48,51 @@ final class AppDelegate: NSObject, UIApplicationDelegate, MessagingDelegate {
     ) {
         Messaging.messaging().apnsToken = deviceToken
     }
-    
+}
+
+// MARK: - MessagingDelegate
+
+extension AppDelegate: MessagingDelegate {
     func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
         Messaging.messaging().token { token, error in
             if let error {
                 print("FCM 토큰 가져오기 실패: \(error)")
             } else if let token {
-                let deviceID = UIDevice.current.identifierForVendor!.uuidString
-                Task { try await NotificationService.postNotificationToken(token, deviceID) }
+                Task {
+                    let deviceID = try await Installations.installations().installationID()
+                    try await NotificationService.postNotificationToken(token, deviceID)
+                }
             }
         }
     }
 }
 
+// MARK: - UNUserNotificationCenterDelegate
+
 extension AppDelegate: UNUserNotificationCenterDelegate {
+    
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
         completionHandler([.banner, .sound, .badge])
+    }
+    
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        
+        let userInfo = response.notification.request.content.userInfo
+        
+        NotificationCenter.default.post(
+            name: .pushNotificationReceived,
+            object: nil,
+            userInfo: userInfo as? [String: Any] ?? [:]
+        )
+        
+        completionHandler()
     }
 }
